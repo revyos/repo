@@ -1,0 +1,727 @@
+diff -Nru gcc-14-14.2.0/debian/changelog gcc-14-14.2.0/debian/changelog
+--- gcc-14-14.2.0/debian/changelog	2025-01-16 03:07:48.000000000 +0800
++++ gcc-14-14.2.0/debian/changelog	2025-01-17 07:26:25.000000000 +0800
+@@ -1,3 +1,17 @@
++gcc-14 (14.2.0-14revyos1+rva22v) unstable; urgency=medium
++
++  * use march=
++    rv64imafdcv_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicntr_zicsr_zihintpause_zihpm_za64rs_zfhmin_zba_zbb_zbs_zkt
++  * disable gccgo for rva22v
++
++ -- Han Gao <rabenda.cn@gmail.com>  Fri, 17 Jan 2025 07:26:25 +0800
++
++gcc-14 (14.2.0-14revyos1) unstable; urgency=medium
++
++  * Apply revyos patchset
++
++ -- Han Gao <rabenda.cn@gmail.com>  Thu, 16 Jan 2025 23:41:37 +0800
++
+ gcc-14 (14.2.0-14) unstable; urgency=medium
+ 
+   * Update to git 20250115 from the gcc-14 branch.
+diff -Nru gcc-14-14.2.0/debian/control gcc-14-14.2.0/debian/control
+--- gcc-14-14.2.0/debian/control	2025-01-15 22:50:51.000000000 +0800
++++ gcc-14-14.2.0/debian/control	2025-01-17 07:23:24.000000000 +0800
+@@ -13,13 +13,13 @@
+   libzstd-dev, zlib1g-dev, systemtap-sdt-dev [linux-any],
+   binutils:native (>= 2.39), binutils-hppa64-linux-gnu:native (>= 2.39) [hppa amd64 i386 x32],
+   gperf, bison, flex,
+-  gettext, nvptx-tools [amd64 arm64 ppc64el], amdgcn-tools-18 (>= 18.2) [amd64],
++  gettext, nvptx-tools [amd64 arm64 ppc64el],
+   texinfo, locales-all, sharutils,
+   procps, gnat-14:native [!arc !ia64 !sh3 !sh3eb !sh4eb !m68k], g++-14:native [!m68k], gnat-13:native [m68k], g++-13:native [m68k], netbase, gdc-14:native [!alpha !arc !ia64 !m68k !sh4 !s390 !sparc64 !hurd-amd64 !hurd-i386], python3:any, cargo [!alpha !hppa !ia64 !m68k !sh4 !x32],
+   libisl-dev (>= 0.20), libmpc-dev (>= 1.0), libmpfr-dev (>= 3.0.0-9~), libgmp-dev (>= 2:5.0.1~), lib32z1-dev [amd64], lib64z1-dev [i386], unzip <!nocheck>,
+   dejagnu <!nocheck>, git <!nocheck>, coreutils, chrpath, lsb-release, quilt, time,
+   pkgconf, libgc-dev,
+-  g++-14-for-host <cross>, gobjc-14-for-host [!avr] <cross>, gfortran-14-for-host <cross>, gdc-14-for-host [!alpha !arc !ia64 !m68k !sh4 !s390 !sparc64 !hurd-amd64 !hurd-i386] <cross>, gccgo-14-for-host [!arc !avr !hppa !loong64 !m68k !sh4] <cross>, gnat-14-for-host [!arc !ia64 !sh3 !sh3eb !sh4eb] <cross>, gm2-14-for-host [!powerpc !ppc64 !sh4] <cross>,
++  g++-14-for-host <cross>, gobjc-14-for-host [!avr] <cross>, gfortran-14-for-host <cross>, gdc-14-for-host [!alpha !arc !ia64 !m68k !sh4 !s390 !sparc64 !hurd-amd64 !hurd-i386] <cross>, gccgo-14-for-host [!arc !avr !hppa !loong64 !m68k !sh4 !riscv64] <cross>, gnat-14-for-host [!arc !ia64 !sh3 !sh3eb !sh4eb] <cross>, gm2-14-for-host [!powerpc !ppc64 !sh4] <cross>,
+ Build-Depends-Indep: doxygen <!nodoc>, graphviz <!nodoc>, ghostscript <!nodoc>, texlive-latex-base <!nodoc>, xsltproc <!nodoc>, libxml2-utils <!nodoc>, docbook-xsl-ns <!nodoc>,
+ Homepage: http://gcc.gnu.org/
+ Vcs-Browser: https://salsa.debian.org/toolchain-team/gcc/tree/gcc-14-debian
+@@ -1850,61 +1850,6 @@
+  Various computations will be instrumented to detect undefined behavior
+  at runtime. Available for C and C++.
+ 
+-Package: libquadmath0
+-X-DH-Build-For-Type: target
+-Section: libs
+-Architecture: any
+-Multi-Arch: same
+-Pre-Depends: ${misc:Pre-Depends}
+-Depends: gcc-14-base (= ${gcc:Version}), ${shlibs:Depends}, ${misc:Depends}
+-Description: GCC Quad-Precision Math Library
+- A library, which provides quad-precision mathematical functions on targets
+- supporting the __float128 datatype. The library is used to provide on such
+- targets the REAL(16) type in the GNU Fortran compiler.
+-
+-Package: lib32quadmath0
+-X-DH-Build-For-Type: target
+-Section: libs
+-Architecture: amd64 ppc64 s390x sparc64 x32 mipsn32 mipsn32el mips64 mips64el mipsn32r6 mipsn32r6el mips64r6 mips64r6el
+-Depends: gcc-14-base (= ${gcc:Version}), ${dep:libcbiarch}, ${shlibs:Depends}, ${misc:Depends}
+-Conflicts: ${confl:lib32}
+-Description: GCC Quad-Precision Math Library (32bit)
+- A library, which provides quad-precision mathematical functions on targets
+- supporting the __float128 datatype. The library is used to provide on such
+- targets the REAL(16) type in the GNU Fortran compiler.
+-
+-Package: lib64quadmath0
+-X-DH-Build-For-Type: target
+-Section: libs
+-Architecture: i386 powerpc sparc s390 mips mipsel mipsn32 mipsn32el mipsr6 mipsr6el mipsn32r6 mipsn32r6el x32
+-Depends: gcc-14-base (= ${gcc:Version}), ${dep:libcbiarch}, ${shlibs:Depends}, ${misc:Depends}
+-Description: GCC Quad-Precision Math Library  (64bit)
+- A library, which provides quad-precision mathematical functions on targets
+- supporting the __float128 datatype. The library is used to provide on such
+- targets the REAL(16) type in the GNU Fortran compiler.
+-
+-#Package: libn32quadmath`'QMATH_SO`'LS
+-#Section: ifdef(`TARGET',`devel',`libs')
+-#Architecture: ifdef(`TARGET',`CROSS_ARCH',`biarchn32_archs')
+-#Priority: optional
+-#Depends: BASELDEP, ${dep:libcbiarch}, ${shlibs:Depends}, ${misc:Depends}
+-#ifdef(`TARGET',`dnl',`Conflicts: lib32quadmath`'QMATH_SO [biarch32_conflicts]')
+-#BUILT_USING`'dnl
+-#Description: GCC Quad-Precision Math Library (n32)
+-# A library, which provides quad-precision mathematical functions on targets
+-# supporting the __float128 datatype. The library is used to provide on such
+-# targets the REAL(16) type in the GNU Fortran compiler.
+-
+-Package: libx32quadmath0
+-X-DH-Build-For-Type: target
+-Section: libs
+-Architecture: amd64 i386
+-Depends: gcc-14-base (= ${gcc:Version}), ${dep:libcbiarch}, ${shlibs:Depends}, ${misc:Depends}
+-Description: GCC Quad-Precision Math Library (x32)
+- A library, which provides quad-precision mathematical functions on targets
+- supporting the __float128 datatype. The library is used to provide on such
+- targets the REAL(16) type in the GNU Fortran compiler.
+-
+ Package: libcc1-0
+ Section: libs
+ Architecture: any
+@@ -3204,475 +3149,6 @@
+  Library needed for GNU Fortran applications linked against the
+  shared library.
+ 
+-Package: gccgo-14-alpha-linux-gnu
+-Architecture: alpha
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-alpha-linux-gnu (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the alpha-linux-gnu architecture
+- This is the GNU Go compiler for the alpha-linux-gnu architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-x86-64-linux-gnu
+-Architecture: amd64
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-x86-64-linux-gnu (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the x86_64-linux-gnu architecture
+- This is the GNU Go compiler for the x86_64-linux-gnu architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-arm-linux-gnueabi
+-Architecture: armel
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-arm-linux-gnueabi (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the arm-linux-gnueabi architecture
+- This is the GNU Go compiler for the arm-linux-gnueabi architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-arm-linux-gnueabihf
+-Architecture: armhf
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-arm-linux-gnueabihf (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the arm-linux-gnueabihf architecture
+- This is the GNU Go compiler for the arm-linux-gnueabihf architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-aarch64-linux-gnu
+-Architecture: arm64
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-aarch64-linux-gnu (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the aarch64-linux-gnu architecture
+- This is the GNU Go compiler for the aarch64-linux-gnu architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-i686-linux-gnu
+-Architecture: i386
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-i686-linux-gnu (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the i686-linux-gnu architecture
+- This is the GNU Go compiler for the i686-linux-gnu architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-mipsel-linux-gnu
+-Architecture: mipsel
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-mipsel-linux-gnu (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the mipsel-linux-gnu architecture
+- This is the GNU Go compiler for the mipsel-linux-gnu architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-mips64-linux-gnuabi64
+-Architecture: mips64
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-mips64-linux-gnuabi64 (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the mips64-linux-gnuabi64 architecture
+- This is the GNU Go compiler for the mips64-linux-gnuabi64 architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-mips64el-linux-gnuabi64
+-Architecture: mips64el
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-mips64el-linux-gnuabi64 (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the mips64el-linux-gnuabi64 architecture
+- This is the GNU Go compiler for the mips64el-linux-gnuabi64 architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-mips64-linux-gnuabin32
+-Architecture: mipsn32
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-mips64-linux-gnuabin32 (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the mips64-linux-gnuabin32 architecture
+- This is the GNU Go compiler for the mips64-linux-gnuabin32 architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-powerpc-linux-gnu
+-Architecture: powerpc
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-powerpc-linux-gnu (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the powerpc-linux-gnu architecture
+- This is the GNU Go compiler for the powerpc-linux-gnu architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-powerpc64-linux-gnu
+-Architecture: ppc64
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-powerpc64-linux-gnu (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the powerpc64-linux-gnu architecture
+- This is the GNU Go compiler for the powerpc64-linux-gnu architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-powerpc64le-linux-gnu
+-Architecture: ppc64el
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-powerpc64le-linux-gnu (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the powerpc64le-linux-gnu architecture
+- This is the GNU Go compiler for the powerpc64le-linux-gnu architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-riscv64-linux-gnu
+-Architecture: riscv64
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-riscv64-linux-gnu (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the riscv64-linux-gnu architecture
+- This is the GNU Go compiler for the riscv64-linux-gnu architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-sparc-linux-gnu
+-Architecture: sparc
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-sparc-linux-gnu (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the sparc-linux-gnu architecture
+- This is the GNU Go compiler for the sparc-linux-gnu architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-sparc64-linux-gnu
+-Architecture: sparc64
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-sparc64-linux-gnu (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the sparc64-linux-gnu architecture
+- This is the GNU Go compiler for the sparc64-linux-gnu architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-s390x-linux-gnu
+-Architecture: s390x
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-s390x-linux-gnu (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the s390x-linux-gnu architecture
+- This is the GNU Go compiler for the s390x-linux-gnu architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-x86-64-linux-gnux32
+-Architecture: x32
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-x86-64-linux-gnux32 (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the x86_64-linux-gnux32 architecture
+- This is the GNU Go compiler for the x86_64-linux-gnux32 architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-mips64el-linux-gnuabin32
+-Architecture: mipsn32el
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-mips64el-linux-gnuabin32 (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the mips64el-linux-gnuabin32 architecture
+- This is the GNU Go compiler for the mips64el-linux-gnuabin32 architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-mipsisa32r6-linux-gnu
+-Architecture: mipsr6
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-mipsisa32r6-linux-gnu (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the mipsisa32r6-linux-gnu architecture
+- This is the GNU Go compiler for the mipsisa32r6-linux-gnu architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-mipsisa32r6el-linux-gnu
+-Architecture: mipsr6el
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-mipsisa32r6el-linux-gnu (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the mipsisa32r6el-linux-gnu architecture
+- This is the GNU Go compiler for the mipsisa32r6el-linux-gnu architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-mipsisa64r6-linux-gnuabi64
+-Architecture: mips64r6
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-mipsisa64r6-linux-gnuabi64 (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the mipsisa64r6-linux-gnuabi64 architecture
+- This is the GNU Go compiler for the mipsisa64r6-linux-gnuabi64 architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-mipsisa64r6el-linux-gnuabi64
+-Architecture: mips64r6el
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-mipsisa64r6el-linux-gnuabi64 (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the mipsisa64r6el-linux-gnuabi64 architecture
+- This is the GNU Go compiler for the mipsisa64r6el-linux-gnuabi64 architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-mipsisa64r6-linux-gnuabin32
+-Architecture: mipsn32r6
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-mipsisa64r6-linux-gnuabin32 (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the mipsisa64r6-linux-gnuabin32 architecture
+- This is the GNU Go compiler for the mipsisa64r6-linux-gnuabin32 architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-mipsisa64r6el-linux-gnuabin32
+-Architecture: mipsn32r6el
+-Multi-Arch: foreign
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14-mipsisa64r6el-linux-gnuabin32 (= ${gcc:Version}), libgo-14-dev (>= ${gcc:Version}), ${dep:libcdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Breaks: libgo12 (<< 8-20171209-2)
+-Replaces: libgo12 (<< 8-20171209-2)
+-Description: GNU Go compiler for the mipsisa64r6el-linux-gnuabin32 architecture
+- This is the GNU Go compiler for the mipsisa64r6el-linux-gnuabin32 architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+-
+-Package: gccgo-14-for-host
+-Architecture: any
+-X-DH-Build-For-Type: target
+-Multi-Arch: same
+-Depends: gcc-14-base (= ${gcc:Version}), gccgo-14${target:suffix} (>= ${gcc:SoftVersion}),
+-  gcc-14-for-host (= ${gcc:Version}), ${misc:Depends}
+-Description: GNU Go compiler for the host architecture
+- This is the GNU Go compiler for the host architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+- .
+- When using this package, tools must be invoked with an architecture prefix.
+- .
+- This is a dependency package.
+-
+-Package: gccgo-14-for-build
+-Architecture: all
+-Multi-Arch: foreign
+-Depends: gcc-14-base (>= ${gcc:SoftVersion}), gccgo-14 (>= ${gcc:Version}),
+-  cpp-14-for-build (= ${gcc:Version}), gcc-14-for-build (= ${gcc:Version}),
+-  ${misc:Depends}
+-Description: GNU Go compiler for the build architecture
+- This is the GNU Go compiler for the build architecture, which
+- compiles Go on platforms supported by the gcc compiler. It uses the gcc
+- backend to generate optimized code.
+- .
+- This is a dependency package.
+-
+-Package: gccgo-14
+-Architecture: any
+-Depends: gcc-14-base (= ${gcc:Version}), gccgo-14${target:suffix} (= ${gcc:Version}), gcc-14 (= ${gcc:Version}), ${misc:Depends}
+-Provides: go-compiler
+-Suggests: ${go:multilib}, gccgo-14-doc, ,
+-Conflicts: ${golang:Conflicts}
+-Description: GNU Go compiler
+- This is the GNU Go compiler, which compiles Go on platforms supported
+- by the gcc compiler. It uses the gcc backend to generate optimized code.
+-
+-Package: gccgo-14-multilib
+-Architecture: amd64 i386 mips mips64 mips64el mips64r6 mips64r6el mipsel mipsn32 mipsn32el mipsn32r6 mipsn32r6el mipsr6 mipsr6el powerpc ppc64 s390 s390x sparc sparc64 x32
+-Depends: gcc-14-base (= ${gcc:Version}), gccgo-14 (= ${gcc:Version}), gcc-14-multilib (= ${gcc:Version}), ${dep:libgobiarchdev}, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: ${dep:libgobiarchdbg}
+-Description: GNU Go compiler (multilib support)
+- This is the GNU Go compiler, which compiles Go on platforms supported
+- by the gcc compiler.
+- .
+- This is a dependency package, depending on development packages
+- for the non-default multilib architecture(s).
+-
+-Package: libgo-14-dev
+-X-DH-Build-For-Type: target
+-Architecture: any
+-Multi-Arch: same
+-Section: libdevel
+-Depends: gcc-14-base (= ${gcc:Version}), libgcc-14-dev (= ${gcc:Version}), libgo23 (>= ${gcc:Version}), ${shlibs:Depends}, ${misc:Depends}
+-Description: Runtime library for GNU Go applications (development files)
+- This package contains the headers and static library files needed to build
+- GNU Go applications.
+-
+-Package: lib64go-14-dev
+-X-DH-Build-For-Type: target
+-Architecture: i386 powerpc sparc s390 mips mipsel mipsn32 mipsn32el mipsr6 mipsr6el mipsn32r6 mipsn32r6el x32
+-Section: libdevel
+-Depends: gcc-14-base (= ${gcc:Version}), lib64gcc-14-dev (= ${gcc:Version}), lib64go23 (>= ${gcc:Version}), ${shlibs:Depends}, ${misc:Depends}
+-Description: Runtime library for GNU Go applications (64bit development files)
+- This package contains the headers and static library files needed to build
+- GNU Go applications.
+-
+-Package: lib32go-14-dev
+-X-DH-Build-For-Type: target
+-Architecture: amd64 ppc64 s390x sparc64 x32 mipsn32 mipsn32el mips64 mips64el mipsn32r6 mipsn32r6el mips64r6 mips64r6el
+-Section: libdevel
+-Depends: gcc-14-base (= ${gcc:Version}), lib32gcc-14-dev (= ${gcc:Version}), lib32go23 (>= ${gcc:Version}), ${shlibs:Depends}, ${misc:Depends}
+-Description: Runtime library for GNU Go applications (32bit development files)
+- This package contains the headers and static library files needed to build
+- GNU Go applications.
+-
+-Package: libn32go-14-dev
+-X-DH-Build-For-Type: target
+-Architecture: mips mipsel mips64 mips64el mipsr6 mipsr6el mips64r6 mips64r6el
+-Section: libdevel
+-Depends: gcc-14-base (= ${gcc:Version}), libn32gcc-14-dev (= ${gcc:Version}), libn32go23 (>= ${gcc:Version}), ${shlibs:Depends}, ${misc:Depends}
+-Description: Runtime library for GNU Go applications (n32 development files)
+- This package contains the headers and static library files needed to build
+- GNU Go applications.
+-
+-Package: libx32go-14-dev
+-X-DH-Build-For-Type: target
+-Architecture: amd64 i386
+-Section: libdevel
+-Depends: gcc-14-base (= ${gcc:Version}), libx32gcc-14-dev (= ${gcc:Version}), libx32go23 (>= ${gcc:Version}), ${shlibs:Depends}, ${misc:Depends}
+-Description: Runtime library for GNU Go applications (x32 development files)
+- This package contains the headers and static library files needed to build
+- GNU Go applications.
+-
+-Package: libgo23
+-X-DH-Build-For-Type: target
+-Section: libs
+-Architecture: any
+-Multi-Arch: same
+-Pre-Depends: ${misc:Pre-Depends}
+-Depends: gcc-14-base (= ${gcc:Version}), ${shlibs:Depends}, ${misc:Depends}
+-Description: Runtime library for GNU Go applications
+- Library needed for GNU Go applications linked against the
+- shared library.
+-
+-Package: lib64go23
+-X-DH-Build-For-Type: target
+-Section: libs
+-Architecture: i386 powerpc sparc s390 mips mipsel mipsn32 mipsn32el mipsr6 mipsr6el mipsn32r6 mipsn32r6el x32
+-Depends: gcc-14-base (= ${gcc:Version}), ${dep:libcbiarch}, ${shlibs:Depends}, ${misc:Depends}
+-Description: Runtime library for GNU Go applications (64bit)
+- Library needed for GNU Go applications linked against the
+- shared library.
+-
+-Package: lib32go23
+-X-DH-Build-For-Type: target
+-Section: libs
+-Architecture: amd64 ppc64 s390x sparc64 x32 mipsn32 mipsn32el mips64 mips64el mipsn32r6 mipsn32r6el mips64r6 mips64r6el
+-Depends: gcc-14-base (= ${gcc:Version}), ${dep:libcbiarch}, ${shlibs:Depends}, ${misc:Depends}
+-Conflicts: ${confl:lib32}
+-Description: Runtime library for GNU Go applications (32bit)
+- Library needed for GNU Go applications linked against the
+- shared library.
+-
+-Package: libn32go23
+-X-DH-Build-For-Type: target
+-Section: libs
+-Architecture: mips mipsel mips64 mips64el mipsr6 mipsr6el mips64r6 mips64r6el
+-Depends: gcc-14-base (= ${gcc:Version}), ${dep:libcbiarch}, ${shlibs:Depends}, ${misc:Depends}
+-Conflicts: lib32go23 [amd64 ppc64 s390x sparc64 x32 mipsn32 mipsn32el mipsn32r6 mipsn32r6el]
+-Description: Runtime library for GNU Go applications (n32)
+- Library needed for GNU Go applications linked against the
+- shared library.
+-
+-Package: libx32go23
+-X-DH-Build-For-Type: target
+-Section: libs
+-Architecture: amd64 i386
+-Depends: gcc-14-base (= ${gcc:Version}), ${dep:libcbiarch}, ${shlibs:Depends}, ${misc:Depends}
+-Description: Runtime library for GNU Go applications (x32)
+- Library needed for GNU Go applications linked against the
+- shared library.
+-
+ Package: libstdc++6
+ X-DH-Build-For-Type: target
+ Architecture: any
+@@ -5619,45 +5095,6 @@
+ # These are versions of basic static libraries such as libgcc.a compiled
+ # with the -msoft-float option, for CPUs without a floating-point unit.
+ 
+-Package: gcc-14-offload-nvptx
+-Architecture: amd64 arm64 ppc64el
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14 (= ${gcc:Version}), ${dep:libcdev},
+-  nvptx-tools, libgomp-plugin-nvptx1 (>= ${gcc:Version}),
+-  ${shlibs:Depends}, ${misc:Depends}
+-Description: GCC offloading compiler to NVPTX
+- The package provides offloading support for NVidia PTX.  OpenMP and OpenACC
+- programs linked with -fopenmp will by default add PTX code into the binaries,
+- which can be offloaded to NVidia PTX capable devices if available.
+-
+-Package: libgomp-plugin-nvptx1
+-Architecture: amd64 arm64 ppc64el
+-Multi-Arch: same
+-Section: libs
+-Depends: gcc-14-base (= ${gcc:Version}), libgomp1, ${shlibs:Depends}, ${misc:Depends}
+-Suggests: libcuda1 [amd64] | libnvidia-tesla-cuda1 [amd64 ppc64el] | libcuda1-any
+-Description: GCC OpenMP v4.5 plugin for offloading to NVPTX
+- This package contains libgomp plugin for offloading to NVidia
+- PTX.  The plugin needs libcuda.so.1 shared library that has to be
+- installed separately.
+-
+-Package: gcc-14-offload-amdgcn
+-Architecture: amd64
+-Depends: gcc-14-base (= ${gcc:Version}), gcc-14 (= ${gcc:Version}), ${dep:libcdev},
+-  libgomp-plugin-amdgcn1 (>= ${gcc:Version}),
+-  amdgcn-tools-18 (>= 18.2) [amd64], ${shlibs:Depends}, ${misc:Depends}
+-Description: GCC offloading compiler to GCN
+- The package provides offloading support for AMD GCN.  OpenMP and OpenACC
+- programs linked with -fopenmp will by default add GCN code into the binaries,
+- which can be offloaded to AMD GCN capable devices if available.
+-
+-Package: libgomp-plugin-amdgcn1
+-Architecture: amd64
+-Multi-Arch: same
+-Section: libs
+-Depends: gcc-14-base (= ${gcc:Version}), libgomp1, ${shlibs:Depends}, ${misc:Depends}
+-Description: GCC OpenMP v4.5 plugin for offloading to GCN
+- This package contains libgomp plugin for offloading to AMD GCN.
+-
+ Package: gcc-14-source
+ Multi-Arch: foreign
+ Architecture: all
+diff -Nru gcc-14-14.2.0/debian/patches/revyos-git-update.diff gcc-14-14.2.0/debian/patches/revyos-git-update.diff
+--- gcc-14-14.2.0/debian/patches/revyos-git-update.diff	1970-01-01 08:00:00.000000000 +0800
++++ gcc-14-14.2.0/debian/patches/revyos-git-update.diff	2025-01-16 23:40:43.000000000 +0800
+@@ -0,0 +1,39 @@
++--- a/src/gcc/config/riscv/riscv-vsetvl.cc
+++++ b/src/gcc/config/riscv/riscv-vsetvl.cc
++@@ -1708,6 +1708,7 @@ private:
++   {
++     int max_sew = MAX (prev.get_sew (), next.get_sew ());
++     prev.set_sew (max_sew);
+++    prev.set_ratio (calculate_ratio (prev.get_sew (), prev.get_vlmul ()));
++     use_min_of_max_sew (prev, next);
++   }
++   inline void use_next_sew_lmul (vsetvl_info &prev, const vsetvl_info &next)
++--- a/src/gcc/config/riscv/sync-rvwmo.md
+++++ b/src/gcc/config/riscv/sync-rvwmo.md
++@@ -33,7 +33,7 @@
++     if (model == MEMMODEL_SEQ_CST)
++ 	return "fence\trw,rw";
++     else if (model == MEMMODEL_ACQ_REL)
++-	return "fence.tso";
+++	return "fence\trw,rw";
++     else if (model == MEMMODEL_ACQUIRE)
++ 	return "fence\tr,rw";
++     else if (model == MEMMODEL_RELEASE)
++new file mode 100644
++--- /dev/null
+++++ b/src/gcc/testsuite/gcc.target/riscv/rvv/base/bug-10.c
++@@ -0,0 +1,14 @@
+++/* { dg-do compile { target { rv64 } } } */
+++/* { dg-options " -march=rv64gcv_zvfh -mabi=lp64d -O2 --param=vsetvl-strategy=optim -fno-schedule-insns  -fno-schedule-insns2 -fno-schedule-fusion " } */
+++
+++#include <riscv_vector.h>
+++
+++void
+++foo (uint8_t *ptr, vfloat16m4_t *v1, vuint32m8_t *v2, vuint8m2_t *v3, size_t vl)
+++{
+++  *v1 = __riscv_vfmv_s_f_f16m4 (1, vl);
+++  *v2 = __riscv_vmv_s_x_u32m8 (2963090659u, vl);
+++  *v3 = __riscv_vsll_vx_u8m2 (__riscv_vid_v_u8m2 (vl), 2, vl);
+++}
+++
+++/* { dg-final { scan-assembler-not {vsetvli.*zero,zero} } }*/
+diff -Nru gcc-14-14.2.0/debian/rules2 gcc-14-14.2.0/debian/rules2
+--- gcc-14-14.2.0/debian/rules2	2025-01-11 21:09:51.000000000 +0800
++++ gcc-14-14.2.0/debian/rules2	2025-01-17 07:20:53.000000000 +0800
+@@ -622,7 +622,7 @@
+ 
+ ifneq (,$(findstring riscv64-linux,$(DEB_TARGET_GNU_TYPE)))
+   CONFARGS += --disable-multilib
+-  CONFARGS += --with-arch=rv64gc --with-abi=lp64d
++  CONFARGS += --with-arch=rv64imafdcv_zic64b_zicbom_zicbop_zicboz_ziccamoa_ziccif_zicclsm_ziccrse_zicntr_zicsr_zihintpause_zihpm_za64rs_zfhmin_zba_zbb_zbs_zkt --with-abi=lp64d
+ endif
+ 
+ ifneq (,$(findstring s390x-linux,$(DEB_TARGET_GNU_TYPE)))
+diff -Nru gcc-14-14.2.0/debian/rules.defs gcc-14-14.2.0/debian/rules.defs
+--- gcc-14-14.2.0/debian/rules.defs	2025-01-15 22:52:38.000000000 +0800
++++ gcc-14-14.2.0/debian/rules.defs	2025-01-17 07:22:28.000000000 +0800
+@@ -1009,6 +1009,8 @@
+ endif
+ # Debian #969221
+ go_no_cpus  += sh4
++# rva22 gccgo don't have vector1.0 support
++go_no_cpus  += riscv64
+ 
+ ifneq ($(with_base_only),yes)
+   ifneq ($(separate_lang),yes)
+diff -Nru gcc-14-14.2.0/debian/rules.parameters gcc-14-14.2.0/debian/rules.parameters
+--- gcc-14-14.2.0/debian/rules.parameters	2025-01-16 03:07:48.000000000 +0800
++++ gcc-14-14.2.0/debian/rules.parameters	2025-01-17 07:23:24.000000000 +0800
+@@ -2,14 +2,14 @@
+ GCC_VERSION	:= 14.2.0
+ NEXT_GCC_VERSION	:= 14.2.1
+ BASE_VERSION	:= 14
+-SOURCE_VERSION	:= 14.2.0-14
+-DEB_VERSION	:= 14.2.0-14
+-DEB_EVERSION	:= 1:14.2.0-14
+-DEB_GDC_VERSION	:= 14.2.0-14
++SOURCE_VERSION	:= 14.2.0-14revyos1
++DEB_VERSION	:= 14.2.0-14revyos1
++DEB_EVERSION	:= 1:14.2.0-14revyos1
++DEB_GDC_VERSION	:= 14.2.0-14revyos1
+ DEB_SOVERSION	:= 5
+ DEB_SOEVERSION	:= 1:5
+ DEB_LIBGCC_SOVERSION	:= 
+-DEB_LIBGCC_VERSION	:= 14.2.0-14
++DEB_LIBGCC_VERSION	:= 14.2.0-14revyos1
+ DEB_STDCXX_SOVERSION	:= 5
+ DEB_GOMP_SOVERSION	:= 5
+ GCC_SONAME	:= 1
+diff -Nru gcc-14-14.2.0/debian/rules.patch gcc-14-14.2.0/debian/rules.patch
+--- gcc-14-14.2.0/debian/rules.patch	2025-01-11 13:37:53.000000000 +0800
++++ gcc-14-14.2.0/debian/rules.patch	2025-01-16 23:41:31.000000000 +0800
+@@ -252,6 +252,9 @@
+ # don't remove, this is regularly overwritten, see PR sanitizer/63958.
+ #debian_patches += libasan-sparc
+ 
++# revyos patch
++debian_patches += revyos-git-update
++
+ series_stamp = $(stampdir)/02-series-stamp
+ series: $(series_stamp)
+ $(series_stamp):
