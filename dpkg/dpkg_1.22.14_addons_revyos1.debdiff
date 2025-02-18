@@ -1,0 +1,49 @@
+diff -Nru dpkg-1.22.14/debian/changelog dpkg-1.22.14revyos1/debian/changelog
+--- dpkg-1.22.14/debian/changelog	2025-01-16 10:56:38.000000000 +0800
++++ dpkg-1.22.14revyos1/debian/changelog	2025-01-17 19:12:54.000000000 +0800
+@@ -1,3 +1,9 @@
++dpkg (1.22.14revyos1) unstable; urgency=medium
++
++  * Update optimize-level & fortify-level
++
++ -- Han Gao <rabenda.cn@gmail.com>  Fri, 17 Jan 2025 19:12:54 +0800
++
+ dpkg (1.22.14) unstable; urgency=medium
+ 
+   [ Guillem Jover ]
+diff -Nru dpkg-1.22.14/scripts/Dpkg/Vendor/Debian.pm dpkg-1.22.14revyos1/scripts/Dpkg/Vendor/Debian.pm
+--- dpkg-1.22.14/scripts/Dpkg/Vendor/Debian.pm	2025-01-15 07:44:58.000000000 +0800
++++ dpkg-1.22.14revyos1/scripts/Dpkg/Vendor/Debian.pm	2025-01-17 19:12:48.000000000 +0800
+@@ -355,7 +355,7 @@
+     if ($opts_build->has('noopt')) {
+         $flags->set_option_value('optimize-level', 0);
+     } else {
+-        $flags->set_option_value('optimize-level', 2);
++        $flags->set_option_value('optimize-level', 3);
+     }
+ 
+     ## Area: sanitize
+@@ -407,7 +407,7 @@
+       # glibc 2.16 and later warn when using -O0 and _FORTIFY_SOURCE.
+       $use_feature{hardening}{fortify} = 0;
+     }
+-    $flags->set_option_value('fortify-level', 2);
++    $flags->set_option_value('fortify-level', 3);
+ 
+     # Handle logical feature interactions.
+     if ($use_feature{hardening}{relro} == 0) {
+diff -Nru dpkg-1.22.14/scripts/t/Dpkg_BuildFlags_Ubuntu.t dpkg-1.22.14revyos1/scripts/t/Dpkg_BuildFlags_Ubuntu.t
+--- dpkg-1.22.14/scripts/t/Dpkg_BuildFlags_Ubuntu.t	2025-01-15 07:44:58.000000000 +0800
++++ dpkg-1.22.14revyos1/scripts/t/Dpkg_BuildFlags_Ubuntu.t	2025-01-17 19:12:54.000000000 +0800
+@@ -62,7 +62,7 @@
+ $ENV{DEB_HOST_ARCH} = 'amd64';
+ $bf = Dpkg::BuildFlags->new();
+ 
+-test_optflag($bf, '-O2');
++test_optflag($bf, '-O3');
+ test_ltoflag($bf);
+ 
+ # Test the overlaid Ubuntu-specific linker flag.
+File /tmp/bbyPgyTcaQ/dpkg-1.22.14/tests/t-unpack-fifo/pkg-fifo/test-fifo is a fifo while file /tmp/1btE1n7YEn/dpkg-1.22.14revyos1/tests/t-unpack-fifo/pkg-fifo/test-fifo is a fifo
+File /tmp/bbyPgyTcaQ/dpkg-1.22.14/tests/t-unpack-hardlink/pkg-hardlink/test-fifo-link0 is a fifo while file /tmp/1btE1n7YEn/dpkg-1.22.14revyos1/tests/t-unpack-hardlink/pkg-hardlink/test-fifo-link0 is a fifo
+File /tmp/bbyPgyTcaQ/dpkg-1.22.14/tests/t-unpack-hardlink/pkg-hardlink/test-fifo-link1 is a fifo while file /tmp/1btE1n7YEn/dpkg-1.22.14revyos1/tests/t-unpack-hardlink/pkg-hardlink/test-fifo-link1 is a fifo
