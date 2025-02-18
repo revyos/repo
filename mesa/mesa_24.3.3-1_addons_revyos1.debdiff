@@ -1,0 +1,30 @@
+diff -Nru mesa-24.3.3/debian/changelog mesa-24.3.3/debian/changelog
+--- mesa-24.3.3/debian/changelog	2025-01-08 19:11:38.000000000 +0800
++++ mesa-24.3.3/debian/changelog	2025-01-09 23:23:53.000000000 +0800
+@@ -1,3 +1,9 @@
++mesa (24.3.3-1revyos1) unstable; urgency=medium
++
++  * Enable iris for riscv64
++
++ -- Han Gao <rabenda.cn@gmail.com>  Thu, 09 Jan 2025 23:23:53 +0800
++
+ mesa (24.3.3-1) unstable; urgency=medium
+ 
+   * New upstream release.
+diff -Nru mesa-24.3.3/debian/rules mesa-24.3.3/debian/rules
+--- mesa-24.3.3/debian/rules	2025-01-08 19:03:09.000000000 +0800
++++ mesa-24.3.3/debian/rules	2025-01-09 23:23:53.000000000 +0800
+@@ -90,8 +90,11 @@
+   endif
+ 
+   # Build intel drivers on archs where libdrm-intel is installed
+-  ifneq (,$(filter $(DEB_HOST_ARCH), amd64 i386 x32))
+-	GALLIUM_DRIVERS += crocus i915 iris svga
++  ifneq (,$(filter $(DEB_HOST_ARCH), amd64 i386 x32 riscv64))
++	GALLIUM_DRIVERS += crocus iris svga
++	ifneq (,$(filter $(DEB_HOST_ARCH), amd64 i386 x32))
++		GALLIUM_DRIVERS += i915
++	endif
+ 	VULKAN_DRIVERS += intel intel_hasvk
+ 	# svga needs xa state tracker
+ 	confflags_GALLIUM += -Dgallium-xa=enabled
