@@ -1,0 +1,466 @@
+diff -Nru llvm-toolchain-17-17.0.6/debian/changelog llvm-toolchain-17-17.0.6/debian/changelog
+--- llvm-toolchain-17-17.0.6/debian/changelog	2025-01-04 16:12:52.000000000 +0800
++++ llvm-toolchain-17-17.0.6/debian/changelog	2025-01-07 16:47:50.000000000 +0800
+@@ -1,3 +1,10 @@
++llvm-toolchain-17 (1:17.0.6-20revyos1) unstable; urgency=medium
++
++  * Apply revyos patchset
++  * Add some memory for flang
++
++ -- Han Gao <rabenda.cn@gmail.com>  Tue, 07 Jan 2025 16:47:50 +0800
++
+ llvm-toolchain-17 (1:17.0.6-20) unstable; urgency=medium
+ 
+   * Fix lldb build failure with Python 3.13.
+diff -Nru llvm-toolchain-17-17.0.6/debian/patches/series llvm-toolchain-17-17.0.6/debian/patches/series
+--- llvm-toolchain-17-17.0.6/debian/patches/series	2025-01-04 14:50:01.000000000 +0800
++++ llvm-toolchain-17-17.0.6/debian/patches/series	2025-01-07 16:47:42.000000000 +0800
+@@ -161,3 +161,7 @@
+ arm64-clang-gcc-14.patch
+ python3.13-quote.diff
+ python3.13.diff
++
++# revyos patchset
++xuantie/0001-Not-for-upstream-RISCV-use-fence-rw-rw-insteadof-fen.patch
++#xuantie/0002-RISC-V-THead-Fix-36990897.patch
+diff -Nru llvm-toolchain-17-17.0.6/debian/patches/xuantie/0001-Not-for-upstream-RISCV-use-fence-rw-rw-insteadof-fen.patch llvm-toolchain-17-17.0.6/debian/patches/xuantie/0001-Not-for-upstream-RISCV-use-fence-rw-rw-insteadof-fen.patch
+--- llvm-toolchain-17-17.0.6/debian/patches/xuantie/0001-Not-for-upstream-RISCV-use-fence-rw-rw-insteadof-fen.patch	1970-01-01 08:00:00.000000000 +0800
++++ llvm-toolchain-17-17.0.6/debian/patches/xuantie/0001-Not-for-upstream-RISCV-use-fence-rw-rw-insteadof-fen.patch	2025-01-07 16:46:21.000000000 +0800
+@@ -0,0 +1,111 @@
++From 53c7e9378ba251fa67e73ad1ddd42595fe35a421 Mon Sep 17 00:00:00 2001
++From: Han Gao <gaohan@iscas.ac.cn>
++Date: Mon, 18 Sep 2023 00:19:52 +0800
++Subject: [PATCH 001/104] [Not-for-upstream] [RISCV] use fence rw, rw insteadof
++ fence.tso
++
++Signed-off-by: Han Gao <gaohan@iscas.ac.cn>
++---
++ llvm/lib/Target/RISCV/RISCVInstrInfo.td | 9 ++-------
++ llvm/test/CodeGen/RISCV/atomic-fence.ll | 2 +-
++ llvm/test/MC/RISCV/Ztso.s               | 4 ++--
++ llvm/test/MC/RISCV/rv32e-valid.s        | 2 --
++ llvm/test/MC/RISCV/rv32i-invalid.s      | 3 ---
++ llvm/test/MC/RISCV/rv32i-valid.s        | 3 ---
++ 6 files changed, 5 insertions(+), 18 deletions(-)
++
++diff --git a/llvm/lib/Target/RISCV/RISCVInstrInfo.td b/llvm/lib/Target/RISCV/RISCVInstrInfo.td
++index e58e3412aea3..3d27c7114b0c 100644
++--- a/llvm/lib/Target/RISCV/RISCVInstrInfo.td
+++++ b/llvm/lib/Target/RISCV/RISCVInstrInfo.td
++@@ -724,12 +724,6 @@ def FENCE : RVInstI<0b000, OPC_MISC_MEM, (outs),
++   let imm12 = {0b0000,pred,succ};
++ }
++ 
++-def FENCE_TSO : RVInstI<0b000, OPC_MISC_MEM, (outs), (ins), "fence.tso", "">, Sched<[]> {
++-  let rs1 = 0;
++-  let rd = 0;
++-  let imm12 = {0b1000,0b0011,0b0011};
++-}
++-
++ def FENCE_I : RVInstI<0b001, OPC_MISC_MEM, (outs), (ins), "fence.i", "">, Sched<[]> {
++   let rs1 = 0;
++   let rd = 0;
++@@ -1706,7 +1700,8 @@ def : Pat<(atomic_fence (XLenVT 4), (timm)), (FENCE 0b10, 0b11)>;
++ // fence release -> fence rw, w
++ def : Pat<(atomic_fence (XLenVT 5), (timm)), (FENCE 0b11, 0b1)>;
++ // fence acq_rel -> fence.tso
++-def : Pat<(atomic_fence (XLenVT 6), (timm)), (FENCE_TSO)>;
+++// Force fence acq_rel -> fence.tso -> fence rw, rw
+++def : Pat<(atomic_fence (XLenVT 6), (timm)), (FENCE 0b11, 0b11)>;
++ // fence seq_cst -> fence rw, rw
++ def : Pat<(atomic_fence (XLenVT 7), (timm)), (FENCE 0b11, 0b11)>;
++ 
++diff --git a/llvm/test/CodeGen/RISCV/atomic-fence.ll b/llvm/test/CodeGen/RISCV/atomic-fence.ll
++index 07e0cd066331..44be6b17dfc1 100644
++--- a/llvm/test/CodeGen/RISCV/atomic-fence.ll
+++++ b/llvm/test/CodeGen/RISCV/atomic-fence.ll
++@@ -43,7 +43,7 @@ define void @fence_release() nounwind {
++ define void @fence_acq_rel() nounwind {
++ ; WMO-LABEL: fence_acq_rel:
++ ; WMO:       # %bb.0:
++-; WMO-NEXT:    fence.tso
+++; WMO-NEXT:    fence rw, rw
++ ; WMO-NEXT:    ret
++ ;
++ ; TSO-LABEL: fence_acq_rel:
++diff --git a/llvm/test/MC/RISCV/Ztso.s b/llvm/test/MC/RISCV/Ztso.s
++index fb4f08efe51e..ed07930860c5 100644
++--- a/llvm/test/MC/RISCV/Ztso.s
+++++ b/llvm/test/MC/RISCV/Ztso.s
++@@ -9,7 +9,7 @@
++ 
++ # CHECK: fence iorw, iorw
++ fence iorw, iorw
++-# CHECK: fence.tso
++-fence.tso
+++# CHECK: fence rw, rw
+++fence rw, rw
++ # CHECK: fence.i
++ fence.i
++diff --git a/llvm/test/MC/RISCV/rv32e-valid.s b/llvm/test/MC/RISCV/rv32e-valid.s
++index 77ce86f01830..56e30e16bf12 100644
++--- a/llvm/test/MC/RISCV/rv32e-valid.s
+++++ b/llvm/test/MC/RISCV/rv32e-valid.s
++@@ -98,8 +98,6 @@ and a0, s1, a3
++ 
++ # CHECK-ASM-AND-OBJ: fence iorw, iorw
++ fence iorw, iorw
++-# CHECK-ASM-AND-OBJ: fence.tso
++-fence.tso
++ # CHECK-ASM-AND-OBJ: fence.i
++ fence.i
++ 
++diff --git a/llvm/test/MC/RISCV/rv32i-invalid.s b/llvm/test/MC/RISCV/rv32i-invalid.s
++index c5e0657b8380..3498eef3822a 100644
++--- a/llvm/test/MC/RISCV/rv32i-invalid.s
+++++ b/llvm/test/MC/RISCV/rv32i-invalid.s
++@@ -185,6 +185,3 @@ pause # CHECK: :[[@LINE]]:1: error: instruction requires the following: 'Zihintp
++ 
++ # Using floating point registers when integer registers are expected
++ addi a2, ft0, 24 # CHECK: :[[@LINE]]:10: error: invalid operand for instruction
++-
++-# fence.tso accepts no operands
++-fence.tso rw, rw # CHECK: :[[@LINE]]:11: error: invalid operand for instruction
++diff --git a/llvm/test/MC/RISCV/rv32i-valid.s b/llvm/test/MC/RISCV/rv32i-valid.s
++index 3b6e93c739e5..913a1722da3d 100644
++--- a/llvm/test/MC/RISCV/rv32i-valid.s
+++++ b/llvm/test/MC/RISCV/rv32i-valid.s
++@@ -326,9 +326,6 @@ fence r,w
++ # CHECK-ASM-AND-OBJ: fence w, ir
++ # CHECK-ASM: encoding: [0x0f,0x00,0xa0,0x01]
++ fence w,ir
++-# CHECK-ASM-AND-OBJ: fence.tso
++-# CHECK-ASM: encoding: [0x0f,0x00,0x30,0x83]
++-fence.tso
++ 
++ # CHECK-ASM-AND-OBJ: fence.i
++ # CHECK-ASM: encoding: [0x0f,0x10,0x00,0x00]
++-- 
++2.40.1
++
+diff -Nru llvm-toolchain-17-17.0.6/debian/patches/xuantie/0002-RISC-V-THead-Fix-36990897.patch llvm-toolchain-17-17.0.6/debian/patches/xuantie/0002-RISC-V-THead-Fix-36990897.patch
+--- llvm-toolchain-17-17.0.6/debian/patches/xuantie/0002-RISC-V-THead-Fix-36990897.patch	1970-01-01 08:00:00.000000000 +0800
++++ llvm-toolchain-17-17.0.6/debian/patches/xuantie/0002-RISC-V-THead-Fix-36990897.patch	2025-01-07 16:46:31.000000000 +0800
+@@ -0,0 +1,322 @@
++From d071af4e41b50e7b77864e6842387631828f6a9a Mon Sep 17 00:00:00 2001
++From: Lifang Xia <lifang_xia@linux.alibaba.com>
++Date: Thu, 22 Feb 2024 14:06:53 +0800
++Subject: [PATCH 002/104] RISC-V: THead Fix 36990897
++
++This patch fixes the hardware problems of TH-1520
++by inserting instructions.
++
++The solutions for fixing the issue are as follows:
++1. Set all Load-Reserved instructions' ordering to aqrl
++2. Insert instructions around all Load-Reserved instructions,
++the sequence is as follows
++    th.sync.i
++    j .Llr_aqrl
++    .align 7
++    .Llr_aqrl:
++    th.dcache.cval1 xy
++    lr.*.aqrl (xy)
++    th.sync
++    .aligin 7
++    next insn
++---
++ .../RISCV/MCTargetDesc/RISCVAsmBackend.cpp    | 58 +++++++++++++++++++
++ .../RISCV/MCTargetDesc/RISCVAsmBackend.h      |  4 ++
++ .../RISCV/MCTargetDesc/RISCVBaseInfo.cpp      | 23 ++++++++
++ .../Target/RISCV/MCTargetDesc/RISCVBaseInfo.h |  6 ++
++ .../RISCV/MCTargetDesc/RISCVMCCodeEmitter.cpp | 28 +++++++++
++ llvm/lib/Target/RISCV/RISCVInstrInfo.cpp      | 18 ++++++
++ llvm/test/CodeGen/RISCV/xthead-36990897.ll    | 23 ++++++++
++ llvm/test/MC/RISCV/xthead-36990897.s          | 14 +++++
++ 8 files changed, 174 insertions(+)
++ create mode 100644 llvm/test/CodeGen/RISCV/xthead-36990897.ll
++ create mode 100644 llvm/test/MC/RISCV/xthead-36990897.s
++
++diff --git a/llvm/lib/Target/RISCV/MCTargetDesc/RISCVAsmBackend.cpp b/llvm/lib/Target/RISCV/MCTargetDesc/RISCVAsmBackend.cpp
++index 1b890fbe041a..f8d472c3c490 100644
++--- a/llvm/lib/Target/RISCV/MCTargetDesc/RISCVAsmBackend.cpp
+++++ b/llvm/lib/Target/RISCV/MCTargetDesc/RISCVAsmBackend.cpp
++@@ -16,6 +16,8 @@
++ #include "llvm/MC/MCDirectives.h"
++ #include "llvm/MC/MCELFObjectWriter.h"
++ #include "llvm/MC/MCExpr.h"
+++#include "llvm/MC/MCInstBuilder.h"
+++#include "llvm/MC/MCObjectStreamer.h"
++ #include "llvm/MC/MCObjectWriter.h"
++ #include "llvm/MC/MCSymbol.h"
++ #include "llvm/MC/MCValue.h"
++@@ -701,6 +703,62 @@ bool RISCVAsmBackend::shouldInsertFixupForCodeAlign(MCAssembler &Asm,
++   return true;
++ }
++ 
+++void RISCVAsmBackend::emitInstructionBegin(MCObjectStreamer &OS,
+++                                           const MCInst &Inst,
+++                                           const MCSubtargetInfo &STI) {
+++  if (RISCVVendorXTHead::shouldFixWithId(STI, "36990897")) {
+++    // Work arround for th1520, aone 36990897
+++    switch (Inst.getOpcode()) {
+++    case RISCV::MRET:
+++    case RISCV::SRET:
+++      OS.emitInstruction(MCInstBuilder(RISCV::TH_SYNC_I), STI);
+++      break;
+++    case RISCV::LR_W:
+++    case RISCV::LR_W_AQ:
+++    case RISCV::LR_W_RL:
+++    case RISCV::LR_W_AQ_RL:
+++    case RISCV::LR_D:
+++    case RISCV::LR_D_AQ:
+++    case RISCV::LR_D_RL:
+++    case RISCV::LR_D_AQ_RL:
+++      MCContext &Ctx = OS.getContext();
+++      MCSymbol *TmpLabel = Ctx.createNamedTempSymbol("LR");
+++      const MCExpr *RefToLinkTmpLabel = MCSymbolRefExpr::create(TmpLabel, Ctx);
+++      MCOperand DestReg = Inst.getOperand(1);
+++      OS.emitInstruction(MCInstBuilder(RISCV::TH_SYNC_I), STI);
+++      OS.emitInstruction(
+++          MCInstBuilder(RISCV::JAL).addReg(0).addExpr(RefToLinkTmpLabel), STI);
+++      OS.emitCodeAlignment(Align(128), &STI);
+++      OS.emitLabel(TmpLabel);
+++      OS.emitInstruction(
+++          MCInstBuilder(RISCV::TH_DCACHE_CVAL1).addOperand(DestReg), STI);
+++      break;
+++    }
+++  }
+++}
+++
+++void RISCVAsmBackend::emitInstructionEnd(MCObjectStreamer &OS,
+++                                         const MCInst &Inst) {
+++  if (RISCVVendorXTHead::shouldFixWithId(STI, "36990897")) {
+++    // Work arround for th1520, aone 36990897
+++    switch (Inst.getOpcode()) {
+++    default:
+++      break;
+++    case RISCV::LR_W:
+++    case RISCV::LR_W_AQ:
+++    case RISCV::LR_W_RL:
+++    case RISCV::LR_W_AQ_RL:
+++    case RISCV::LR_D:
+++    case RISCV::LR_D_AQ:
+++    case RISCV::LR_D_RL:
+++    case RISCV::LR_D_AQ_RL:
+++      OS.emitInstruction(MCInstBuilder(RISCV::TH_SYNC), STI);
+++      OS.emitCodeAlignment(Align(128), &STI);
+++      break;
+++    }
+++  }
+++}
+++
++ std::unique_ptr<MCObjectTargetWriter>
++ RISCVAsmBackend::createObjectTargetWriter() const {
++   return createRISCVELFObjectWriter(OSABI, Is64Bit);
++diff --git a/llvm/lib/Target/RISCV/MCTargetDesc/RISCVAsmBackend.h b/llvm/lib/Target/RISCV/MCTargetDesc/RISCVAsmBackend.h
++index 0ea1f32e8296..6b24232d2f2b 100644
++--- a/llvm/lib/Target/RISCV/MCTargetDesc/RISCVAsmBackend.h
+++++ b/llvm/lib/Target/RISCV/MCTargetDesc/RISCVAsmBackend.h
++@@ -104,6 +104,10 @@ public:
++                     const MCSubtargetInfo *STI) const override;
++ 
++   const MCTargetOptions &getTargetOptions() const { return TargetOptions; }
+++
+++  void emitInstructionBegin(MCObjectStreamer &OS, const MCInst &Inst,
+++                            const MCSubtargetInfo &STI) override;
+++  void emitInstructionEnd(MCObjectStreamer &OS, const MCInst &Inst) override;
++ };
++ }
++ 
++diff --git a/llvm/lib/Target/RISCV/MCTargetDesc/RISCVBaseInfo.cpp b/llvm/lib/Target/RISCV/MCTargetDesc/RISCVBaseInfo.cpp
++index 0a42c6faee29..a8ad6f395a25 100644
++--- a/llvm/lib/Target/RISCV/MCTargetDesc/RISCVBaseInfo.cpp
+++++ b/llvm/lib/Target/RISCV/MCTargetDesc/RISCVBaseInfo.cpp
++@@ -16,6 +16,7 @@
++ #include "llvm/MC/MCInst.h"
++ #include "llvm/MC/MCRegisterInfo.h"
++ #include "llvm/MC/MCSubtargetInfo.h"
+++#include "llvm/Support/CommandLine.h"
++ #include "llvm/Support/RISCVISAInfo.h"
++ #include "llvm/Support/raw_ostream.h"
++ #include "llvm/TargetParser/TargetParser.h"
++@@ -310,4 +311,26 @@ void RISCVZC::printRlist(unsigned SlistEncode, raw_ostream &OS) {
++ 
++ void RISCVZC::printSpimm(int64_t Spimm, raw_ostream &OS) { OS << Spimm; }
++ 
+++namespace RISCVVendorXTHead {
+++
+++static cl::opt<std::string> RISCVXTheadId("riscv-xthead-id",
+++                                          cl::desc("The ID of THead."),
+++                                          cl::init("36990897"), cl::Hidden);
+++
+++bool shouldFixWithId(const MCSubtargetInfo &STI, std::string id) {
+++  if (RISCVXTheadId.find(id) == std::string::npos)
+++    return false;
+++
+++  // should fix 36990897 or not. it depends on xtheadcmo and xtheadsync
+++  if (id.find("36990897") != std::string::npos) {
+++    if (STI.hasFeature(RISCV::FeatureVendorXTHeadCmo) &&
+++        STI.hasFeature(RISCV::FeatureVendorXTHeadSync))
+++      // Enabled fixing 36990897
+++      return true;
+++  }
+++
+++  return false;
+++}
+++
+++} // namespace RISCVVendorXTHead
++ } // namespace llvm
++diff --git a/llvm/lib/Target/RISCV/MCTargetDesc/RISCVBaseInfo.h b/llvm/lib/Target/RISCV/MCTargetDesc/RISCVBaseInfo.h
++index f86419319dd3..335aadf4bbef 100644
++--- a/llvm/lib/Target/RISCV/MCTargetDesc/RISCVBaseInfo.h
+++++ b/llvm/lib/Target/RISCV/MCTargetDesc/RISCVBaseInfo.h
++@@ -631,6 +631,12 @@ void printRlist(unsigned SlistEncode, raw_ostream &OS);
++ void printSpimm(int64_t Spimm, raw_ostream &OS);
++ } // namespace RISCVZC
++ 
+++namespace RISCVVendorXTHead {
+++
+++bool shouldFixWithId(const MCSubtargetInfo &STI, std::string id);
+++
+++} // namespace RISCVVendorXTHead
+++
++ } // namespace llvm
++ 
++ #endif
++diff --git a/llvm/lib/Target/RISCV/MCTargetDesc/RISCVMCCodeEmitter.cpp b/llvm/lib/Target/RISCV/MCTargetDesc/RISCVMCCodeEmitter.cpp
++index b63a5cea823e..d7fa8621d65d 100644
++--- a/llvm/lib/Target/RISCV/MCTargetDesc/RISCVMCCodeEmitter.cpp
+++++ b/llvm/lib/Target/RISCV/MCTargetDesc/RISCVMCCodeEmitter.cpp
++@@ -65,6 +65,10 @@ public:
++                         SmallVectorImpl<MCFixup> &Fixups,
++                         const MCSubtargetInfo &STI) const;
++ 
+++  void fixTHEAD36990897(const MCInst &MI, SmallVectorImpl<char> &CB,
+++                        SmallVectorImpl<MCFixup> &Fixups,
+++                        const MCSubtargetInfo &STI) const;
+++
++   /// TableGen'erated function for getting the binary encoding for an
++   /// instruction.
++   uint64_t getBinaryCodeForInstr(const MCInst &MI,
++@@ -265,6 +269,20 @@ void RISCVMCCodeEmitter::expandLongCondBr(const MCInst &MI,
++   }
++ }
++ 
+++void RISCVMCCodeEmitter::fixTHEAD36990897(
+++    const MCInst &MI, SmallVectorImpl<char> &CB,
+++    SmallVectorImpl<MCFixup> &Fixups, const MCSubtargetInfo &STI) const {
+++  MCInst Inst = MI;
+++  uint32_t Binary;
+++
+++#define MASK_AQ (1 << 26)
+++#define MASK_RL (1 << 25)
+++  Binary = getBinaryCodeForInstr(Inst, Fixups, STI);
+++  // Add AQRL for the lr.w/lr.d
+++  Binary = (Binary | MASK_AQ | MASK_RL);
+++  support::endian::write(CB, Binary, support::little);
+++}
+++
++ void RISCVMCCodeEmitter::encodeInstruction(const MCInst &MI,
++                                            SmallVectorImpl<char> &CB,
++                                            SmallVectorImpl<MCFixup> &Fixups,
++@@ -273,6 +291,16 @@ void RISCVMCCodeEmitter::encodeInstruction(const MCInst &MI,
++   // Get byte count of instruction.
++   unsigned Size = Desc.getSize();
++ 
+++  // Fix thead 36990897
+++  if ((MI.getOpcode() == RISCV::LR_W || MI.getOpcode() == RISCV::LR_W_AQ ||
+++       MI.getOpcode() == RISCV::LR_W_RL || MI.getOpcode() == RISCV::LR_D ||
+++       MI.getOpcode() == RISCV::LR_D_AQ || MI.getOpcode() == RISCV::LR_D_RL) &&
+++      RISCVVendorXTHead::shouldFixWithId(STI, "36990897")) {
+++    fixTHEAD36990897(MI, CB, Fixups, STI);
+++    MCNumEmitted += 1;
+++    return;
+++  }
+++
++   // RISCVInstrInfo::getInstSizeInBytes expects that the total size of the
++   // expanded instructions for each pseudo is correct in the Size field of the
++   // tablegen definition for the pseudo.
++diff --git a/llvm/lib/Target/RISCV/RISCVInstrInfo.cpp b/llvm/lib/Target/RISCV/RISCVInstrInfo.cpp
++index c1065f73000f..2ab21661b0be 100644
++--- a/llvm/lib/Target/RISCV/RISCVInstrInfo.cpp
+++++ b/llvm/lib/Target/RISCV/RISCVInstrInfo.cpp
++@@ -11,6 +11,7 @@
++ //===----------------------------------------------------------------------===//
++ 
++ #include "RISCVInstrInfo.h"
+++#include "MCTargetDesc/RISCVBaseInfo.h"
++ #include "MCTargetDesc/RISCVMatInt.h"
++ #include "RISCV.h"
++ #include "RISCVMachineFunctionInfo.h"
++@@ -1290,6 +1291,23 @@ unsigned RISCVInstrInfo::getInstSizeInBytes(const MachineInstr &MI) const {
++     if (isCompressibleInst(MI, STI))
++       return 2;
++   }
+++
+++  if (RISCVVendorXTHead::shouldFixWithId(STI, "36990897") &&
+++      (Opcode == RISCV::PseudoMaskedAtomicSwap32 ||
+++       Opcode == RISCV::PseudoMaskedAtomicLoadAdd32 ||
+++       Opcode == RISCV::PseudoAtomicLoadNand32 ||
+++       Opcode == RISCV::PseudoMaskedAtomicLoadSub32 ||
+++       Opcode == RISCV::PseudoMaskedAtomicLoadNand32 ||
+++       Opcode == RISCV::PseudoMaskedAtomicLoadMax32 ||
+++       Opcode == RISCV::PseudoMaskedAtomicLoadMin32 ||
+++       Opcode == RISCV::PseudoMaskedAtomicLoadUMax32 ||
+++       Opcode == RISCV::PseudoMaskedAtomicLoadUMin32 ||
+++       Opcode == RISCV::PseudoCmpXchg32 || Opcode == RISCV::PseudoCmpXchg64 ||
+++       Opcode == RISCV::PseudoMaskedCmpXchg32 ||
+++       Opcode == RISCV::PseudoAtomicLoadNand64)) {
+++    // Update the atomic pesudo instructions size
+++    return get(Opcode).getSize() + 260;
+++  }
++   return get(Opcode).getSize();
++ }
++ 
++diff --git a/llvm/test/CodeGen/RISCV/xthead-36990897.ll b/llvm/test/CodeGen/RISCV/xthead-36990897.ll
++new file mode 100644
++index 000000000000..c105f2e46f40
++--- /dev/null
+++++ b/llvm/test/CodeGen/RISCV/xthead-36990897.ll
++@@ -0,0 +1,23 @@
+++; RUN: llc -mtriple=riscv64 -mattr=+a,+xtheadcmo,+xtheadsync -verify-machineinstrs -filetype=obj < %s \
+++; RUN:   | llvm-objdump -d  - | FileCheck -check-prefix=RV64IAXTHEADCMOXTHEADSYNC %s
+++; RUN: llc -mtriple=riscv64 -mattr=+a,+xtheadcmo,+xtheadsync -verify-machineinstrs -filetype=obj -riscv-xthead-id="none" < %s \
+++; RUN:   | llvm-objdump -d  - | FileCheck -check-prefix=RV64IA %s
+++
+++define i1 @cmpxchg_i32_seq_cst_seq_cst(ptr %ptr, i32 signext %cmp,
+++; RV64IAXTHEADCMOXTHEADSYNC-LABEL: <cmpxchg_i32_seq_cst_seq_cst>:
+++; RV64IAXTHEADCMOXTHEADSYNC:       th.sync.i
+++; RV64IAXTHEADCMOXTHEADSYNC-NEXT:  j 0x80
+++; RV64IAXTHEADCMOXTHEADSYNC-NEXT:  nop
+++; RV64IAXTHEADCMOXTHEADSYNC-LABEL: th.dcache.cval1
+++; RV64IAXTHEADCMOXTHEADSYNC:       lr.w.aqrl
+++; RV64IAXTHEADCMOXTHEADSYNC-NEXT:  th.sync
+++; RV64IAXTHEADCMOXTHEADSYNC-NEXT:  nop
+++; RV64IAXTHEADCMOXTHEADSYNC-LABEL: ret
+++; RV64IA-LABEL: <cmpxchg_i32_seq_cst_seq_cst>:
+++; RV64IA:       lr.w.aqrl
+++        i32 signext %val) nounwind {
+++entry:
+++  %0 = cmpxchg ptr %ptr, i32 %cmp, i32 %val seq_cst seq_cst
+++  %1 = extractvalue { i32, i1 } %0, 1
+++  ret i1 %1
+++}
++diff --git a/llvm/test/MC/RISCV/xthead-36990897.s b/llvm/test/MC/RISCV/xthead-36990897.s
++new file mode 100644
++index 000000000000..0d17ced41041
++--- /dev/null
+++++ b/llvm/test/MC/RISCV/xthead-36990897.s
++@@ -0,0 +1,14 @@
+++# RUN: llvm-mc %s -triple=riscv64 -mattr=+a,+xtheadcmo,+xtheadsync -riscv-no-aliases -filetype=obj \
+++# RUN:     | llvm-objdump --mattr=+a,+xtheadcmo,+xtheadsync -d - \
+++# RUN:     | FileCheck -check-prefixes=CHECK-A-XTHEADCMO-XTHEADSYNC %s
+++
+++# CHECK-A-XTHEADCMO-XTHEADSYNC-LABEL: .text
+++# CHECK-A-XTHEADCMO-XTHEADSYNC:       th.sync.i
+++# CHECK-A-XTHEADCMO-XTHEADSYNC-NEXT:  j 0x80
+++# CHECK-A-XTHEADCMO-XTHEADSYNC-NEXT:  nop
+++# CHECK-A-XTHEADCMO-XTHEADSYNC-LABEL: th.dcache.cval1
+++# CHECK-A-XTHEADCMO-XTHEADSYNC-NEXT:  lr.w
+++# CHECK-A-XTHEADCMO-XTHEADSYNC-NEXT:  th.sync
+++# CHECK-A-XTHEADCMO-XTHEADSYNC-NEXT:  nop
+++lr.w a0, (a1)
+++
++-- 
++2.40.1
++
