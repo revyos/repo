@@ -1,0 +1,87 @@
+diff -Nru golang-1.23-1.23.6/debian/changelog golang-1.23-1.23.6/debian/changelog
+--- golang-1.23-1.23.6/debian/changelog	2025-02-13 17:17:32.000000000 +0800
++++ golang-1.23-1.23.6/debian/changelog	2025-02-19 16:22:57.000000000 +0800
+@@ -1,3 +1,15 @@
++golang-1.23 (1.23.6-4revyos1+rva22v) unstable; urgency=medium
++
++  * Set GORISCV64=rva22u64
++
++ -- Han Gao <rabenda.cn@gmail.com>  Wed, 19 Feb 2025 16:22:57 +0800
++
++golang-1.23 (1.23.6-4revyos1) unstable; urgency=medium
++
++  * Apply revyos patchset
++
++ -- Han Gao <rabenda.cn@gmail.com>  Wed, 19 Feb 2025 15:15:09 +0800
++
+ golang-1.23 (1.23.6-4) unstable; urgency=medium
+ 
+   * Team upload
+diff -Nru golang-1.23-1.23.6/debian/helpers/goenv.sh golang-1.23-1.23.6/debian/helpers/goenv.sh
+--- golang-1.23-1.23.6/debian/helpers/goenv.sh	2025-02-13 17:17:32.000000000 +0800
++++ golang-1.23-1.23.6/debian/helpers/goenv.sh	2025-02-19 16:22:46.000000000 +0800
+@@ -70,4 +70,11 @@
+ fi
+ export GOARM
+ 
++unset GORISCV64
++if [ "$GOARCH" = 'riscv64' ]; then
++	# riscv64 rva22 patch
++        GORISCV64=rva22u64
++fi
++export GORISCV64
++
+ eval "$@"
+diff -Nru golang-1.23-1.23.6/debian/patches/0001-release-branch.go1.21-cmd-internal-obj-hack-FENCETSO.patch golang-1.23-1.23.6/debian/patches/0001-release-branch.go1.21-cmd-internal-obj-hack-FENCETSO.patch
+--- golang-1.23-1.23.6/debian/patches/0001-release-branch.go1.21-cmd-internal-obj-hack-FENCETSO.patch	1970-01-01 08:00:00.000000000 +0800
++++ golang-1.23-1.23.6/debian/patches/0001-release-branch.go1.21-cmd-internal-obj-hack-FENCETSO.patch	2025-02-19 15:14:28.000000000 +0800
+@@ -0,0 +1,41 @@
++From 1775865df36e0a7b2a9b1c92d1784bf3dc2b712c Mon Sep 17 00:00:00 2001
++From: WANG Xuerui <git@xen0n.name>
++Date: Tue, 19 Sep 2023 15:42:23 +0800
++Subject: [PATCH 1/5] [release-branch.go1.21] cmd/internal/obj: hack FENCETSO
++ to make it "fence rw, rw" instead
++
++It is said that T-Head C910/C906 are early designs that don't support
++fence.tso natively, so we would want to avoid emitting it because SBI
++emulation is slow.
++
++This is not currently used at present, but preemptively patch it so we
++won't have to revisit this in the future.
++
++The change is a hack, because the RevyOS Go fork is only intended to be
++used with T-Head systems.
++
++Closes: https://github.com/revyos/revyos/issues/22
++Change-Id: I8107e3bd2d9c208cd0606f09b984ad59eb75010e
++(cherry picked from commit dcbf1726473b1d2ddd95fb3aa0d4b140d5a3383e)
++---
++ src/cmd/internal/obj/riscv/inst.go | 4 +++-
++ 1 file changed, 3 insertions(+), 1 deletion(-)
++
++diff --git a/src/cmd/internal/obj/riscv/inst.go b/src/cmd/internal/obj/riscv/inst.go
++index 223ddd15b2..75484b6cc0 100644
++--- a/src/cmd/internal/obj/riscv/inst.go
+++++ b/src/cmd/internal/obj/riscv/inst.go
++@@ -212,7 +212,9 @@ func encode(a obj.As) *inst {
++ 	case AFENCE:
++ 		return &inst{0xf, 0x0, 0x0, 0, 0x0}
++ 	case AFENCETSO:
++-		return &inst{0xf, 0x0, 0x13, -1997, 0x41}
+++		// https://github.com/revyos/revyos/issues/22
+++		// encode "fence rw, rw" instead
+++		return &inst{0xf, 0x0, 0x13, 51, 0x1}
++ 	case AFEQD:
++ 		return &inst{0x53, 0x2, 0x0, -1504, 0x51}
++ 	case AFEQQ:
++-- 
++2.47.1
++
+diff -Nru golang-1.23-1.23.6/debian/patches/series golang-1.23-1.23.6/debian/patches/series
+--- golang-1.23-1.23.6/debian/patches/series	2025-02-13 17:17:32.000000000 +0800
++++ golang-1.23-1.23.6/debian/patches/series	2025-02-19 15:56:21.000000000 +0800
+@@ -1,2 +1,4 @@
+ 0001-Skip-flaky-TestCrashDumpsAllThreads-on-mips64le.patch
+ 0002-Skip-flaky-TestCrashDumpsAllThreads-on-s390x.patch
++# revyos patchset
++0001-release-branch.go1.21-cmd-internal-obj-hack-FENCETSO.patch
