@@ -1,20 +1,20 @@
-diff -Nru binutils-2.43.50.20250108/debian/changelog binutils-2.43.50.20250108/debian/changelog
---- binutils-2.43.50.20250108/debian/changelog	2025-01-09 07:34:21.000000000 +0800
-+++ binutils-2.43.50.20250108/debian/changelog	2025-01-15 15:51:58.000000000 +0800
+diff -Nru binutils-2.44/debian/changelog binutils-2.44/debian/changelog
+--- binutils-2.44/debian/changelog	2025-03-04 05:01:22.000000000 +0800
++++ binutils-2.44/debian/changelog	2025-01-15 15:51:58.000000000 +0800
 @@ -1,3 +1,9 @@
-+binutils (2.43.50.20250108-1revyos1+th1520) unstable; urgency=medium
++binutils (2.44-3revyos1+th1520) unstable; urgency=medium
 +
 +  * Apply xuantie patch
 +
 + -- Han Gao <rabenda.cn@gmail.com>  Wed, 15 Jan 2025 15:51:58 +0800
 +
- binutils (2.43.50.20250108-1) unstable; urgency=medium
+ binutils (2.44-3) unstable; urgency=medium
  
-   * New upstream snapshot, taken from the trunk.
-diff -Nru binutils-2.43.50.20250108/debian/patches/0001-Fix-test-failed-in-glibc-mutex-s-tests-caused-by-TH-.patch binutils-2.43.50.20250108/debian/patches/0001-Fix-test-failed-in-glibc-mutex-s-tests-caused-by-TH-.patch
---- binutils-2.43.50.20250108/debian/patches/0001-Fix-test-failed-in-glibc-mutex-s-tests-caused-by-TH-.patch	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-2.43.50.20250108/debian/patches/0001-Fix-test-failed-in-glibc-mutex-s-tests-caused-by-TH-.patch	2025-01-15 15:51:58.000000000 +0800
-@@ -0,0 +1,2364 @@
+   * New upstream snapshot, taken from the 2.44 release branch.
+diff -Nru binutils-2.44/debian/patches/0001-Fix-test-failed-in-glibc-mutex-s-tests-caused-by-TH-.patch binutils-2.44/debian/patches/0001-Fix-test-failed-in-glibc-mutex-s-tests-caused-by-TH-.patch
+--- binutils-2.44/debian/patches/0001-Fix-test-failed-in-glibc-mutex-s-tests-caused-by-TH-.patch	1970-01-01 08:00:00.000000000 +0800
++++ binutils-2.44/debian/patches/0001-Fix-test-failed-in-glibc-mutex-s-tests-caused-by-TH-.patch	2025-01-15 15:51:58.000000000 +0800
+@@ -0,0 +1,2361 @@
 +From 79475b4202458d778a985f7ceb2df24f8658f88c Mon Sep 17 00:00:00 2001
 +From: Lifang Xia <lifang_xia@linux.alibaba.com>
 +Date: Mon, 13 Nov 2023 09:47:02 +0800
@@ -46,11 +46,11 @@ diff -Nru binutils-2.43.50.20250108/debian/patches/0001-Fix-test-failed-in-glibc
 + opcodes/riscv-opc.c                |   16 +-
 + 4 files changed, 1964 insertions(+), 272 deletions(-)
 +
-+diff --git a/gas/config/tc-riscv.c b/gas/config/tc-riscv.c
-+index a915c8b4995..96471af6371 100644
-+--- a/gas/config/tc-riscv.c
-++++ b/gas/config/tc-riscv.c
-+@@ -808,6 +808,15 @@ add_relaxed_insn (struct riscv_cl_insn *insn, int max_chars, int var,
++Index: binutils-2.44/gas/config/tc-riscv.c
++===================================================================
++--- binutils-2.44.orig/gas/config/tc-riscv.c
+++++ binutils-2.44/gas/config/tc-riscv.c
++@@ -811,6 +811,15 @@ add_relaxed_insn (struct riscv_cl_insn *
 + 	    subtype, symbol, offset, NULL);
 + }
 + 
@@ -66,7 +66,7 @@ diff -Nru binutils-2.43.50.20250108/debian/patches/0001-Fix-test-failed-in-glibc
 + /* Compute the length of a branch sequence, and adjust the stored length
 +    accordingly.  If FRAGP is NULL, the worst-case length is returned.  */
 + 
-+@@ -2339,6 +2348,55 @@ macro (struct riscv_cl_insn *ip, expressionS *imm_expr,
++@@ -2347,6 +2356,55 @@ macro (struct riscv_cl_insn *ip, express
 +   int rs1 = (ip->insn_opcode >> OP_SH_RS1) & OP_MASK_RS1;
 +   int rs2 = (ip->insn_opcode >> OP_SH_RS2) & OP_MASK_RS2;
 +   int mask = ip->insn_mo->mask;
@@ -122,10 +122,10 @@ diff -Nru binutils-2.43.50.20250108/debian/patches/0001-Fix-test-failed-in-glibc
 + 
 +   source_macro = mask;
 + 
-+diff --git a/gas/testsuite/gas/riscv/a-ext-64.d b/gas/testsuite/gas/riscv/a-ext-64.d
-+index 86d24008688..eabf1b9e95f 100644
-+--- a/gas/testsuite/gas/riscv/a-ext-64.d
-++++ b/gas/testsuite/gas/riscv/a-ext-64.d
++Index: binutils-2.44/gas/testsuite/gas/riscv/a-ext-64.d
++===================================================================
++--- binutils-2.44.orig/gas/testsuite/gas/riscv/a-ext-64.d
+++++ binutils-2.44/gas/testsuite/gas/riscv/a-ext-64.d
 +@@ -8,179 +8,1268 @@
 + Disassembly of section .text:
 + 
@@ -1571,10 +1571,10 @@ diff -Nru binutils-2.43.50.20250108/debian/patches/0001-Fix-test-failed-in-glibc
 ++[ 	]+1338:	e6a5352f          	amomaxu.d.aqrl	a0,a0,\(a0\)
 ++[ 	]+133c:	e6a5352f          	amomaxu.d.aqrl	a0,a0,\(a0\)
 ++[ 	]+...
-+diff --git a/gas/testsuite/gas/riscv/a-ext.d b/gas/testsuite/gas/riscv/a-ext.d
-+index e0c3b9a394c..df590872353 100644
-+--- a/gas/testsuite/gas/riscv/a-ext.d
-++++ b/gas/testsuite/gas/riscv/a-ext.d
++Index: binutils-2.44/gas/testsuite/gas/riscv/a-ext.d
++===================================================================
++--- binutils-2.44.orig/gas/testsuite/gas/riscv/a-ext.d
+++++ binutils-2.44/gas/testsuite/gas/riscv/a-ext.d
 +@@ -8,91 +8,636 @@
 + Disassembly of section .text:
 + 
@@ -2300,11 +2300,11 @@ diff -Nru binutils-2.43.50.20250108/debian/patches/0001-Fix-test-failed-in-glibc
 ++[ 	]+998:	e6a5252f          	amomaxu.w.aqrl	a0,a0,\(a0\)
 ++[ 	]+99c:	e6a5252f          	amomaxu.w.aqrl	a0,a0,\(a0\)
 ++[ 	]+...
-+diff --git a/opcodes/riscv-opc.c b/opcodes/riscv-opc.c
-+index 5680f6f96d6..b9b15067e35 100644
-+--- a/opcodes/riscv-opc.c
-++++ b/opcodes/riscv-opc.c
-+@@ -619,7 +619,7 @@ const struct riscv_opcode riscv_opcodes[] =
++Index: binutils-2.44/opcodes/riscv-opc.c
++===================================================================
++--- binutils-2.44.orig/opcodes/riscv-opc.c
+++++ binutils-2.44/opcodes/riscv-opc.c
++@@ -648,7 +648,7 @@ const struct riscv_opcode riscv_opcodes[
 + {"subw",       64, INSN_CLASS_I, "d,s,t",     MATCH_SUBW, MASK_SUBW, match_opcode, 0 },
 + 
 + /* Atomic memory operation instruction subset.  */
@@ -2313,7 +2313,7 @@ diff -Nru binutils-2.43.50.20250108/debian/patches/0001-Fix-test-failed-in-glibc
 + {"sc.w",            0, INSN_CLASS_ZALRSC, "d,t,0(s)", MATCH_SC_W, MASK_SC_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
 + {"amoadd.w",        0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOADD_W, MASK_AMOADD_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
 + {"amoswap.w",       0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOSWAP_W, MASK_AMOSWAP_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
-+@@ -630,7 +630,7 @@ const struct riscv_opcode riscv_opcodes[] =
++@@ -659,7 +659,7 @@ const struct riscv_opcode riscv_opcodes[
 + {"amomaxu.w",       0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMAXU_W, MASK_AMOMAXU_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
 + {"amomin.w",        0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMIN_W, MASK_AMOMIN_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
 + {"amominu.w",       0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMINU_W, MASK_AMOMINU_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
@@ -2322,7 +2322,7 @@ diff -Nru binutils-2.43.50.20250108/debian/patches/0001-Fix-test-failed-in-glibc
 + {"sc.w.aq",         0, INSN_CLASS_ZALRSC, "d,t,0(s)", MATCH_SC_W|MASK_AQ, MASK_SC_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
 + {"amoadd.w.aq",     0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOADD_W|MASK_AQ, MASK_AMOADD_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
 + {"amoswap.w.aq",    0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOSWAP_W|MASK_AQ, MASK_AMOSWAP_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
-+@@ -641,7 +641,7 @@ const struct riscv_opcode riscv_opcodes[] =
++@@ -670,7 +670,7 @@ const struct riscv_opcode riscv_opcodes[
 + {"amomaxu.w.aq",    0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMAXU_W|MASK_AQ, MASK_AMOMAXU_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
 + {"amomin.w.aq",     0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMIN_W|MASK_AQ, MASK_AMOMIN_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
 + {"amominu.w.aq",    0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMINU_W|MASK_AQ, MASK_AMOMINU_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
@@ -2331,7 +2331,7 @@ diff -Nru binutils-2.43.50.20250108/debian/patches/0001-Fix-test-failed-in-glibc
 + {"sc.w.rl",         0, INSN_CLASS_ZALRSC, "d,t,0(s)", MATCH_SC_W|MASK_RL, MASK_SC_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
 + {"amoadd.w.rl",     0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOADD_W|MASK_RL, MASK_AMOADD_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
 + {"amoswap.w.rl",    0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOSWAP_W|MASK_RL, MASK_AMOSWAP_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
-+@@ -652,7 +652,7 @@ const struct riscv_opcode riscv_opcodes[] =
++@@ -681,7 +681,7 @@ const struct riscv_opcode riscv_opcodes[
 + {"amomaxu.w.rl",    0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMAXU_W|MASK_RL, MASK_AMOMAXU_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
 + {"amomin.w.rl",     0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMIN_W|MASK_RL, MASK_AMOMIN_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
 + {"amominu.w.rl",    0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMINU_W|MASK_RL, MASK_AMOMINU_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
@@ -2340,7 +2340,7 @@ diff -Nru binutils-2.43.50.20250108/debian/patches/0001-Fix-test-failed-in-glibc
 + {"sc.w.aqrl",       0, INSN_CLASS_ZALRSC, "d,t,0(s)", MATCH_SC_W|MASK_AQRL, MASK_SC_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
 + {"amoadd.w.aqrl",   0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOADD_W|MASK_AQRL, MASK_AMOADD_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
 + {"amoswap.w.aqrl",  0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOSWAP_W|MASK_AQRL, MASK_AMOSWAP_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
-+@@ -663,7 +663,7 @@ const struct riscv_opcode riscv_opcodes[] =
++@@ -692,7 +692,7 @@ const struct riscv_opcode riscv_opcodes[
 + {"amomaxu.w.aqrl",  0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMAXU_W|MASK_AQRL, MASK_AMOMAXU_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
 + {"amomin.w.aqrl",   0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMIN_W|MASK_AQRL, MASK_AMOMIN_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
 + {"amominu.w.aqrl",  0, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMINU_W|MASK_AQRL, MASK_AMOMINU_W|MASK_AQRL, match_opcode, INSN_DREF|INSN_4_BYTE },
@@ -2349,7 +2349,7 @@ diff -Nru binutils-2.43.50.20250108/debian/patches/0001-Fix-test-failed-in-glibc
 + {"sc.d",           64, INSN_CLASS_ZALRSC, "d,t,0(s)", MATCH_SC_D, MASK_SC_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
 + {"amoadd.d",       64, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOADD_D, MASK_AMOADD_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
 + {"amoswap.d",      64, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOSWAP_D, MASK_AMOSWAP_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
-+@@ -674,7 +674,7 @@ const struct riscv_opcode riscv_opcodes[] =
++@@ -703,7 +703,7 @@ const struct riscv_opcode riscv_opcodes[
 + {"amomaxu.d",      64, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMAXU_D, MASK_AMOMAXU_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
 + {"amomin.d",       64, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMIN_D, MASK_AMOMIN_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
 + {"amominu.d",      64, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMINU_D, MASK_AMOMINU_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
@@ -2358,7 +2358,7 @@ diff -Nru binutils-2.43.50.20250108/debian/patches/0001-Fix-test-failed-in-glibc
 + {"sc.d.aq",        64, INSN_CLASS_ZALRSC, "d,t,0(s)", MATCH_SC_D|MASK_AQ, MASK_SC_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
 + {"amoadd.d.aq",    64, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOADD_D|MASK_AQ, MASK_AMOADD_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
 + {"amoswap.d.aq",   64, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOSWAP_D|MASK_AQ, MASK_AMOSWAP_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
-+@@ -685,7 +685,7 @@ const struct riscv_opcode riscv_opcodes[] =
++@@ -714,7 +714,7 @@ const struct riscv_opcode riscv_opcodes[
 + {"amomaxu.d.aq",   64, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMAXU_D|MASK_AQ, MASK_AMOMAXU_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
 + {"amomin.d.aq",    64, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMIN_D|MASK_AQ, MASK_AMOMIN_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
 + {"amominu.d.aq",   64, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMINU_D|MASK_AQ, MASK_AMOMINU_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
@@ -2367,7 +2367,7 @@ diff -Nru binutils-2.43.50.20250108/debian/patches/0001-Fix-test-failed-in-glibc
 + {"sc.d.rl",        64, INSN_CLASS_ZALRSC, "d,t,0(s)", MATCH_SC_D|MASK_RL, MASK_SC_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
 + {"amoadd.d.rl",    64, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOADD_D|MASK_RL, MASK_AMOADD_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
 + {"amoswap.d.rl",   64, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOSWAP_D|MASK_RL, MASK_AMOSWAP_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
-+@@ -696,7 +696,7 @@ const struct riscv_opcode riscv_opcodes[] =
++@@ -725,7 +725,7 @@ const struct riscv_opcode riscv_opcodes[
 + {"amomaxu.d.rl",   64, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMAXU_D|MASK_RL, MASK_AMOMAXU_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
 + {"amomin.d.rl",    64, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMIN_D|MASK_RL, MASK_AMOMIN_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
 + {"amominu.d.rl",   64, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOMINU_D|MASK_RL, MASK_AMOMINU_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
@@ -2376,13 +2376,10 @@ diff -Nru binutils-2.43.50.20250108/debian/patches/0001-Fix-test-failed-in-glibc
 + {"sc.d.aqrl",      64, INSN_CLASS_ZALRSC, "d,t,0(s)", MATCH_SC_D|MASK_AQRL, MASK_SC_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
 + {"amoadd.d.aqrl",  64, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOADD_D|MASK_AQRL, MASK_AMOADD_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
 + {"amoswap.d.aqrl", 64, INSN_CLASS_ZAAMO, "d,t,0(s)", MATCH_AMOSWAP_D|MASK_AQRL, MASK_AMOSWAP_D|MASK_AQRL, match_opcode, INSN_DREF|INSN_8_BYTE },
-+-- 
-+2.43.0
-+
-diff -Nru binutils-2.43.50.20250108/debian/patches/0002-Sync-a-ext-testcase-using-.insn.patch binutils-2.43.50.20250108/debian/patches/0002-Sync-a-ext-testcase-using-.insn.patch
---- binutils-2.43.50.20250108/debian/patches/0002-Sync-a-ext-testcase-using-.insn.patch	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-2.43.50.20250108/debian/patches/0002-Sync-a-ext-testcase-using-.insn.patch	2025-01-15 15:51:58.000000000 +0800
-@@ -0,0 +1,601 @@
+diff -Nru binutils-2.44/debian/patches/0002-Sync-a-ext-testcase-using-.insn.patch binutils-2.44/debian/patches/0002-Sync-a-ext-testcase-using-.insn.patch
+--- binutils-2.44/debian/patches/0002-Sync-a-ext-testcase-using-.insn.patch	1970-01-01 08:00:00.000000000 +0800
++++ binutils-2.44/debian/patches/0002-Sync-a-ext-testcase-using-.insn.patch	2025-01-15 15:51:58.000000000 +0800
+@@ -0,0 +1,598 @@
 +From ea58eb5cfe12565ed007b77ad291c8fa7bbb8f16 Mon Sep 17 00:00:00 2001
 +From: Jiawei <jiawei@iscas.ac.cn>
 +Date: Wed, 15 Jan 2025 18:30:39 +0800
@@ -2393,10 +2390,10 @@ diff -Nru binutils-2.43.50.20250108/debian/patches/0002-Sync-a-ext-testcase-usin
 + gas/testsuite/gas/riscv/a-ext.d    |  90 +++++++++++-------
 + 2 files changed, 138 insertions(+), 98 deletions(-)
 +
-+diff --git a/gas/testsuite/gas/riscv/a-ext-64.d b/gas/testsuite/gas/riscv/a-ext-64.d
-+index eabf1b9e95f..8620ba880d7 100644
-+--- a/gas/testsuite/gas/riscv/a-ext-64.d
-++++ b/gas/testsuite/gas/riscv/a-ext-64.d
++Index: binutils-2.44/gas/testsuite/gas/riscv/a-ext-64.d
++===================================================================
++--- binutils-2.44.orig/gas/testsuite/gas/riscv/a-ext-64.d
+++++ binutils-2.44/gas/testsuite/gas/riscv/a-ext-64.d
 +@@ -8,7 +8,7 @@
 + Disassembly of section .text:
 + 
@@ -2771,10 +2768,10 @@ diff -Nru binutils-2.43.50.20250108/debian/patches/0002-Sync-a-ext-testcase-usin
 ++[ 	]+1378:	00000013          	nop
 ++[ 	]+137c:	00000013          	nop
 ++
-+diff --git a/gas/testsuite/gas/riscv/a-ext.d b/gas/testsuite/gas/riscv/a-ext.d
-+index df590872353..35f59699eef 100644
-+--- a/gas/testsuite/gas/riscv/a-ext.d
-++++ b/gas/testsuite/gas/riscv/a-ext.d
++Index: binutils-2.44/gas/testsuite/gas/riscv/a-ext.d
++===================================================================
++--- binutils-2.44.orig/gas/testsuite/gas/riscv/a-ext.d
+++++ binutils-2.44/gas/testsuite/gas/riscv/a-ext.d
 +@@ -8,7 +8,7 @@
 + Disassembly of section .text:
 + 
@@ -2981,16 +2978,13 @@ diff -Nru binutils-2.43.50.20250108/debian/patches/0002-Sync-a-ext-testcase-usin
 ++[ 	]+9f8:	00000013          	nop
 ++[ 	]+9fc:	00000013          	nop
 ++
-+-- 
-+2.43.0
-+
-diff -Nru binutils-2.43.50.20250108/debian/patches/series binutils-2.43.50.20250108/debian/patches/series
---- binutils-2.43.50.20250108/debian/patches/series	2025-01-09 07:34:21.000000000 +0800
-+++ binutils-2.43.50.20250108/debian/patches/series	2025-01-15 15:51:58.000000000 +0800
-@@ -39,3 +39,6 @@
- gold-package-metadata.diff
- 
+diff -Nru binutils-2.44/debian/patches/series binutils-2.44/debian/patches/series
+--- binutils-2.44/debian/patches/series	2025-03-04 04:51:41.000000000 +0800
++++ binutils-2.44/debian/patches/series	2025-01-15 15:51:58.000000000 +0800
+@@ -41,3 +41,6 @@
  gprofng-examples-tgz-deterministic.diff
+ pr32715.diff
+ gprofng-cross-build.diff
 +
 +0001-Fix-test-failed-in-glibc-mutex-s-tests-caused-by-TH-.patch
 +0002-Sync-a-ext-testcase-using-.insn.patch
