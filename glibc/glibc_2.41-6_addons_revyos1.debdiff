@@ -1,0 +1,40 @@
+diff -Nru glibc-2.41/debian/changelog glibc-2.41/debian/changelog
+--- glibc-2.41/debian/changelog	2025-03-15 06:56:28.000000000 +0800
++++ glibc-2.41/debian/changelog	2025-03-17 05:04:13.000000000 +0800
+@@ -1,3 +1,9 @@
++glibc (2.41-6revyos1) unstable; urgency=medium
++
++  * Add xuantie-xfail-testsuite
++
++ -- Han Gao <rabenda.cn@gmail.com>  Mon, 17 Mar 2025 05:04:13 +0800
++
+ glibc (2.41-6) unstable; urgency=medium
+ 
+   [ Samuel Thibault ]
+diff -Nru glibc-2.41/debian/testsuite-xfail-debian.mk glibc-2.41/debian/testsuite-xfail-debian.mk
+--- glibc-2.41/debian/testsuite-xfail-debian.mk	2025-03-15 06:56:28.000000000 +0800
++++ glibc-2.41/debian/testsuite-xfail-debian.mk	2025-03-17 05:03:57.000000000 +0800
+@@ -681,6 +681,23 @@
+ # riscv64
+ ######################################################################
+ ifeq ($(config-machine)-$(config-os),riscv64-linux-gnu)
++# XuanTie FPU bug revyos issue 17
++test-xfail-test-double-fma = yes
++test-xfail-test-float-double-div = yes
++test-xfail-test-float-double-fma = yes
++test-xfail-test-float-double-mul = yes
++test-xfail-test-float-fma = yes
++test-xfail-test-float32-float32x-div = yes
++test-xfail-test-float32-float32x-fma = yes
++test-xfail-test-float32-float32x-mul = yes
++test-xfail-test-float32-float64-div   = yes
++test-xfail-test-float32-float64-fma = yes
++test-xfail-test-float32-float64-mul = yes
++test-xfail-test-float32-fma = yes
++test-xfail-test-float32x-float64-div = yes
++test-xfail-test-float32x-float64-fma = yes
++test-xfail-test-float32x-fma = yes
++test-xfail-test-float64-fma = yes
+ endif
+ 
+ 
